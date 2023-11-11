@@ -8,6 +8,10 @@ const writeFileSync = (file, data) => {
     return fs.writeFileSync(file, data)
 }
 
+const appendFileSync = (file, data) => {
+    return fs.appendFileSync(file, data)
+}
+
 const readFileLines = (file) => {
     try { return readFileSync(file).split('\n') } 
     catch (err) { console.log(err); return [] }	
@@ -22,4 +26,4 @@ const getChallengeFromPath = (path) => {
     return '.' + path.slice(positionCodember + 'codember'.length).replace('.js', '')
 }
 
-export { readFileSync, readFileLines, writeFileSync, writeFileLines, getChallengeFromPath }
+export { readFileSync, readFileLines, writeFileSync, writeFileLines, appendFileSync, getChallengeFromPath }
