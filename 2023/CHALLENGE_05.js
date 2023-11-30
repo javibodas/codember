@@ -4,23 +4,24 @@ import { fileURLToPath } from 'url';
 const challenge = getChallengeFromPath(fileURLToPath(import.meta.url))
 const input = readFileLines(challenge + '.txt').map(line => line.replace('\r', ''));
 
-const validateId = (id) => id && (id.match(/^[a-z\d\s]+$/i)||[]).length > 0
-const validateUsername = (username) => username && (username.match(/^[a-z\d\s]+$/i)||[]).length > 0
-const validateEmail = (email) => email && (email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i)||[]).length > 0
-const validateAge = (age) => !age || (age.match(/^[\d]+$/)||[]).length > 0
-const validateLocation = (location) => !location || (location.match(/^[a-z\s]+$/i)||[]).length > 0
+const isValidId = (id) => id && (id.match(/^[a-z\d\s]+$/i)||[]).length > 0
+const isValidUsername = (username) => username && (username.match(/^[a-z\d\s]+$/i)||[]).length > 0
+const isValidEmail = (email) => email && (email.match(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/i)||[]).length > 0
+const isValidAge = (age) => !age || (age.match(/^[\d]+$/)||[]).length > 0
+const isValidLocation = (location) => !location || (location.match(/^[a-z\s]+$/i)||[]).length > 0
+const isValidUser = (user) => isValidId(user.id) && isValidUsername(user.username) && 
+                            isValidEmail(user.email) && isValidLocation(user.location) && 
+                            isValidAge(user.age)
 
 
-const result = input.filter(user => {
-    const [ id, username, email, age, location ] = user.split(',')
-
-    return !validateId(id) || !validateUsername(username) ||
-        !validateEmail(email) || !validateLocation(location) ||
-        !validateAge(age)
-})
-.map(user => user.split(',')[1])
-.reduce((acc, username) => {
-    return acc + username[0]
-},'')
-
-writeFileSync(challenge + '.result', result)
+writeFileSync(challenge + '.result',
+    input
+    .map(userRaw => {
+        const [ id, username, email, age, location ] = userRaw.split(',')
+        return { id, username, email, age, location }
+    })
+    .filter(user => !isValidUser(user))
+    .reduce((acc, user) => {
+        return acc + user.username[0]
+    },'')
+)
