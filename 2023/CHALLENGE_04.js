@@ -4,20 +4,21 @@ import { fileURLToPath } from 'url';
 const challenge = getChallengeFromPath(fileURLToPath(import.meta.url))
 const input = readFileLines(challenge + '.txt').map(line => line.replace('\r', ''));
 
-const validFiles = input
-            .filter(fileChecksum => {
-                const file = fileChecksum.split('-')[0]
-                const fileChars = [...file]
-                const checksumChars = [...fileChecksum.split('-')[1]]
+const charExistsOneTimeInString = (c, str) => (str.match(new RegExp(c, 'g'))||[]).length === 1
 
-                const checksumWithValidChar = checksumChars.every(charChecsum => (file.match(new RegExp(charChecsum, 'g'))||[]).length === 1)
-                const checksumCharsWithWrongOrder = fileChars.reduce((acc, curr) => {
-                    if (acc[0] === curr) acc.shift()
-                    return acc
-                }, checksumChars);
+writeFileSync(challenge + '.result',
+    input
+    .filter(fileChecksum => {
+        const [ file, checkSum ] = fileChecksum.split('-')
+        const fileChars = [...file]
+        const checksumChars = [...checkSum]
 
-                return checksumWithValidChar && checksumCharsWithWrongOrder.length === 0
-            })
+        const charExistsInString = checksumChars.every(char => charExistsOneTimeInString(char, file))
+        const charsWithWrongOrder = fileChars.reduce((chars, fileChar) => {
+            if (chars[0] === fileChar) chars.shift()
+            return chars
+        }, checksumChars);
 
-
-writeFileSync(challenge + '.result', validFiles[32])
+        return charExistsInString && charsWithWrongOrder.length === 0
+    })[32]
+)

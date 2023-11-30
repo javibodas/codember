@@ -4,19 +4,24 @@ import { fileURLToPath } from 'url';
 const challenge = getChallengeFromPath(fileURLToPath(import.meta.url))
 const input = readFileLines(challenge + '.txt');
 
-const wrongPasswords = input
+const wrongPassword = (ocurrences, min ,max ) => ocurrences < min || ocurrences > max
+
+writeFileSync(challenge + '.result',
+    input
     .map(securityPolicy => {
-        const policy = securityPolicy.split(':')[0]
-        const password = securityPolicy.split(':')[1].trim()
-        const letter = policy.split(' ')[1]
-        const occurrences = policy.split(' ')[0].trim().split('-')
+        const [ policy, password ] = securityPolicy.split(':')
+        const [ occurrences, letter ] = policy.split(' ')
+        const [ minOcurrences, maxOcurrences ] = occurrences.trim().split('-')
+        const actualOcurrences = (password.trim().match(new RegExp(letter, 'g'))||[]).length
 
-        return { min: occurrences[0], max: occurrences[1], letter, password }
+        return { 
+            actualOcurrences, 
+            minOcurrences, 
+            maxOcurrences,
+            password: password.trim() 
+        }
     })
-    .filter(mapped => {
-        const ocurrences = (mapped.password.match(new RegExp(mapped.letter, 'g'))||[]).length
-        return ocurrences < mapped.min || ocurrences > mapped.max
-    })
-    .map(mapped => mapped.password)
-
-writeFileSync(challenge + '.result', wrongPasswords[41])
+    .filter(sp => wrongPassword(sp.actualOcurrences, sp.minOcurrences, sp.maxOcurrences))
+    .map(sp => sp.password)
+    [41]
+)
